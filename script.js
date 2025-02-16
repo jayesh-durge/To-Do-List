@@ -9,6 +9,7 @@ document.querySelectorAll(".listname").forEach((list)=>{
         parent.querySelectorAll("li").forEach(element => {
         if(parent.dataset.click=='true'){
             element.style.display="block";
+            element.animate([{opacity:0},{opacity:1}],{duration:200,fill:"forwards",easing:'ease-out'});
         }
         else{
             element.style.display="";
@@ -58,8 +59,15 @@ function task(adder,idx,neww){
     let field=document.querySelector(".inputvalidate");
     field.style.display="block";
     let input=document.querySelector("input");
-    document.querySelector("#ok").onclick= ()=>{
+    let ok=document.querySelector("#ok");
+    let not=document.querySelector("#not");
+    input.focus();
+    input.addEventListener("input",()=>{
+        input.style.borderColor="dodgerblue";
+    });
+    ok.onclick=()=>{
         if(input.value!=""){
+        input.style.borderColor="dodgerblue";
         let li=!neww?document.createElement("li"):neww;
         li.innerText=input.value;
         li.style.display="block";
@@ -72,15 +80,26 @@ function task(adder,idx,neww){
             edit(idx,adder,li.innerText);
         }
         updatestorage();
+        field.style.display='';
+        return;
         }
-        field.style.display="";
-        return ;
-    };
-    document.querySelector("#not").onclick= ()=>{
+        else{
+        input.style.borderColor='red';
+        input.focus();
+        }
+    }
+    not.onclick=()=>{
+        input.style.borderColor="dodgerblue";
         input.value="";
         field.style.display="";
         return ;
     }
+    field.addEventListener("touchstart",(e)=>{
+        if(e.target!=input && e.target!=ok && e.target!=not){
+            input.style.borderColor="dodgerblue";
+            field.style.display="";
+        }
+    });
 }
 
 
@@ -130,36 +149,71 @@ addEventListener("DOMContentLoaded",()=>{
     });
 });
 
-
+//undo click or not
+let isspecial=false;
+document.querySelector(".undo").addEventListener("touchstart",()=>{
+    document.querySelector(".undo").dataset.pass='false';
+    document.querySelector(".undo").style.display="";
+    isspecial=true;
+});
 // swipe to delete element
-let start;
+let leftstart,indis,y;
 document.addEventListener("touchstart",(e)=>{
-    start=e.touches[0].clientX;
+    leftstart=e.target.parentElement.getBoundingClientRect().left;
+    indis=e.touches[0].clientX-leftstart;
+    y=e.touches[0].clientY;
 });
 
 document.addEventListener("touchmove",(e)=>{
     let element=e.target;
-    if(element.tagName=='LI'&& !element.classList.contains("adder") && Math.abs(e.touches[0].clientX-start)>60){
-
-        let idx=Array.from(document.querySelectorAll("ul")).indexOf(document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY).parentElement);
-
-        if(idx==0){
-            today.splice(today.indexOf(element.innerText),1);
+    if(element.tagName=='LI'&& !element.classList.contains("adder")){
+        element.style.transform=`translateX(${e.touches[0].clientX-indis}px)`;
+        if(Math.abs(element.getBoundingClientRect().left-leftstart)>100 && Math.abs(e.touches[0].clientY-y)<15){
+            let idx=Array.from(document.querySelectorAll("ul")).indexOf(document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY).parentElement);
+            document.querySelector(".undo").style.display="block";
+            element.style.display="";
+            let animation= element.animate([{opacity:1,},{opacity:0,}],
+                {
+                duration:300,fill:"forwards",easing:"linear"
+            });
+            setTimeout(() => {
+                if(document.querySelector(".undo").dataset.pass=='false'){
+                    document.querySelector(".undo").dataset.pass=='true';
+                    return ;
+                }
+                if(idx==0){
+                    today.splice(today.indexOf(element.innerText),1);
+                }
+                else if(idx==1){
+                    week.splice(week.indexOf(element.innerText),1);
+                }
+                else if(idx==2){
+                    month.splice(month.indexOf(element.innerText),1);
+                }
+                else if(idx==3){
+                    year.splice(year.indexOf(element.innerText),1);
+                }
+                updatestorage();
+                element.remove();
+                document.querySelector(".undo").dataset.pass=='true';
+                document.querySelector(".undo").style.display="";
+                }, 5000);
+                animation.onfinish=()=>{
+                    element.style.display="";
+                }
+                if(isspecial){
+                    element.style.display="block";
+                    element.style.opacity=1;
+                    isspecial=false;
+                    console.log("hello");
+                }
         }
-        else if(idx==1){
-            week.splice(today.indexOf(element.innerText),1);
-        }
-        else if(idx==2){
-            month.splice(today.indexOf(element.innerText),1);
-        }
-        else if(idx==3){
-            year.splice(today.indexOf(element.innerText),1);
-        }
-        element.remove();
-        updatestorage();
     }
 });
 
+document.addEventListener("touchend",(e)=>{
+    e.target.style.transform=``;
+});
 
 // edit task by double tap's
 addEventListener("dblclick",(e)=>{

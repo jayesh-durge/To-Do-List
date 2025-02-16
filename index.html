@@ -9,12 +9,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
-    <img src="background.jpg" loading="lazy">
+    <div class="background"></div>
     <header><h1>to do list</h1></header>
     <div class="inputvalidate">
-        <input type="text">
-    <button id="ok"><i class="fa-solid fa-check"></i></button>
-    <button id="not"><i class="fa-regular fa-circle-xmark"></i></button>
+        <div class="holder">
+            <input type="text">
+            <button id="ok"><i class="fa-solid fa-check"></i></button>
+            <button id="not"><i class="fa-regular fa-circle-xmark"></i></button>
+        </div>
     </div>
     <main>
         <ul data-click='true'>
@@ -35,7 +37,7 @@
             <div class="listname">year's plans</div>
             <li class="adder"><i class="fa-regular fa-square-plus"></i> add your task <i class="fa-regular fa-square-plus"></i></li>
         </ul>
-        
+        <button class="undo" data-pass="true">undo</button>
     </main>
     <footer>&copy;copy right belong's to jayesh</footer>
 </body>
