@@ -172,13 +172,24 @@ document.addEventListener("touchmove",(e)=>{
             let idx=Array.from(document.querySelectorAll("ul")).indexOf(document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY).parentElement);
             document.querySelector(".undo").style.display="block";
             element.style.display="";
-            let animation= element.animate([{opacity:1,},{opacity:0,}],
-                {
+            let animation= element.animate([{opacity:1},{opacity:0,transform:''}],
+            {
                 duration:300,fill:"forwards",easing:"linear"
             });
+            animation.onfinish=()=>{
+                element.style.display="";
+            }
             setTimeout(() => {
                 if(document.querySelector(".undo").dataset.pass=='false'){
-                    document.querySelector(".undo").dataset.pass=='true';
+                    document.querySelector(".undo").dataset.pass='true';
+                    let x=element.animate([{opacity:0,},{opacity:1}],
+                        {
+                        duration:300,fill:"forwards",easing:"linear"
+                    });
+                    x.onfinish=()=>{
+                        element.style.opacity="";
+                        element.style.display="block";
+                    };
                     return ;
                 }
                 if(idx==0){
@@ -198,19 +209,9 @@ document.addEventListener("touchmove",(e)=>{
                 document.querySelector(".undo").dataset.pass=='true';
                 document.querySelector(".undo").style.display="";
                 }, 5000);
-                animation.onfinish=()=>{
-                    element.style.display="";
-                }
-                if(isspecial){
-                    element.style.display="block";
-                    element.style.opacity=1;
-                    isspecial=false;
-                    console.log("hello");
-                }
         }
     }
 });
-
 document.addEventListener("touchend",(e)=>{
     e.target.style.transform=``;
 });
