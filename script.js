@@ -94,7 +94,7 @@ function task(adder,idx,neww){
         field.style.display="";
         return ;
     }
-    field.addEventListener("touchstart",(e)=>{
+    field.addEventListener("click",(e)=>{
         if(e.target!=input && e.target!=ok && e.target!=not){
             input.style.borderColor="dodgerblue";
             field.style.display="";
@@ -150,11 +150,17 @@ addEventListener("DOMContentLoaded",()=>{
 });
 
 //undo click or not
-let isspecial=false;
-document.querySelector(".undo").addEventListener("touchstart",()=>{
+let store=null;
+document.querySelector(".undo").addEventListener("click",()=>{
     document.querySelector(".undo").dataset.pass='false';
     document.querySelector(".undo").style.display="";
-    isspecial=true;
+    let x=store.animate([{opacity:0,},{opacity:1}],{duration:300,fill:"forwards",easing:"linear"});
+    x.onfinish=()=>{
+        store.style.opacity="";
+        store.style.display="block";
+        store.style.transform=``;
+        store=null;
+    };
 });
 // swipe to delete element
 let leftstart,indis,y;
@@ -171,10 +177,11 @@ document.addEventListener("touchmove",(e)=>{
         if(Math.abs(element.getBoundingClientRect().left-leftstart)>100 && Math.abs(e.touches[0].clientY-y)<15){
             let idx=Array.from(document.querySelectorAll("ul")).indexOf(document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY).parentElement);
             document.querySelector(".undo").style.display="block";
+            store=element;
             element.style.display="";
             let animation= element.animate([{opacity:1},{opacity:0,transform:''}],
             {
-                duration:300,fill:"forwards",easing:"linear"
+                duration:500,fill:"forwards",easing:"linear"
             });
             animation.onfinish=()=>{
                 element.style.display="";
@@ -182,14 +189,6 @@ document.addEventListener("touchmove",(e)=>{
             setTimeout(() => {
                 if(document.querySelector(".undo").dataset.pass=='false'){
                     document.querySelector(".undo").dataset.pass='true';
-                    let x=element.animate([{opacity:0,},{opacity:1}],
-                        {
-                        duration:300,fill:"forwards",easing:"linear"
-                    });
-                    x.onfinish=()=>{
-                        element.style.opacity="";
-                        element.style.display="block";
-                    };
                     return ;
                 }
                 if(idx==0){
@@ -214,6 +213,62 @@ document.addEventListener("touchmove",(e)=>{
 });
 document.addEventListener("touchend",(e)=>{
     e.target.style.transform=``;
+});
+
+
+//deletion using mousedown
+document.addEventListener("mousedown",(event)=>{
+    leftstart=event.target.parentElement.getBoundingClientRect().left;
+    indis=event.clientX-leftstart;
+    y=event.clientY;
+    let mousemovef=(e)=>{
+        let element=e.target;
+        if(element.tagName=='LI'&& !element.classList.contains("adder")){
+            element.style.transform=`translateX(${e.clientX-indis}px)`;
+            if(Math.abs(element.getBoundingClientRect().left-leftstart)>300 && Math.abs(e.clientY-y)<50){
+                let idx=Array.from(document.querySelectorAll("ul")).indexOf(document.elementFromPoint(e.clientX,e.clientY).parentElement);
+                document.querySelector(".undo").style.display="block";
+                store=element;
+                element.style.display="";
+                let animation= element.animate([{opacity:1},{opacity:0,transform:''}],
+                {
+                    duration:500,fill:"forwards",easing:"linear"
+                });
+                animation.onfinish=()=>{
+                    element.style.display="";
+                }
+                setTimeout(() => {
+                    if(document.querySelector(".undo").dataset.pass=='false'){
+                        document.querySelector(".undo").dataset.pass='true';
+                        return ;
+                    }
+                    if(idx==0){
+                        today.splice(today.indexOf(element.innerText),1);
+                    }
+                    else if(idx==1){
+                        week.splice(week.indexOf(element.innerText),1);
+                    }
+                    else if(idx==2){
+                        month.splice(month.indexOf(element.innerText),1);
+                    }
+                    else if(idx==3){
+                        year.splice(year.indexOf(element.innerText),1);
+                    }
+                    updatestorage();
+                    element.remove();
+                    document.querySelector(".undo").dataset.pass=='true';
+                    document.querySelector(".undo").style.display="";
+                    }, 5000);
+            }
+        }
+    }
+    let mouseupf=(a)=>{
+        a.target.style.transform="";
+        document.removeEventListener("mousemove",mousemovef);
+        document.removeEventListener("mouseup",mouseupf);
+    }
+    document.addEventListener("mousemove",mousemovef);
+    document.addEventListener("mouseup",mouseupf);
 });
 
 // edit task by double tap's
